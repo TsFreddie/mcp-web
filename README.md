@@ -15,7 +15,7 @@ Only support `npx` / stdio mode, since it is designed to be used on your own mac
 ```json
 {
   "mcpServers": {
-    "filesystem": {
+    "web": {
       "command": "npx",
       "args": ["-y", "@tsfreddie/mcp-web"]
     }
