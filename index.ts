@@ -591,7 +591,7 @@ const main = async () => {
     {
       title: "Search DuckDuckGo",
       description:
-        "Searches DuckDuckGo and returns parsed results. Convert user's natrual language to keywords if needed. Starts from page 1 every time it is called. Use the fetch tool on result URLs to read more about them.",
+        "Searches DuckDuckGo and returns parsed results. Convert user's natrual language to keywords if needed. If user specifies a region, make sure to search keywords in that region's language. Starts from page 1 every time it is called. Use the fetch tool on result URLs to read more about them.",
       inputSchema: {
         query: z.string().describe("The search query"),
         region: z
