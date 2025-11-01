@@ -13,6 +13,81 @@ import { randomBytes } from "crypto";
 import { parseHTML } from "linkedom";
 import { Defuddle } from "defuddle/node";
 
+const supportedRegions: Record<string, string> = {
+  global: "",
+  argentina: "ar-es",
+  australia: "au-en",
+  austria: "at-de",
+  belgium_fr: "be-fr",
+  belgium_nl: "be-nl",
+  brazil: "br-pt",
+  bulgaria: "bg-bg",
+  canada_en: "ca-en",
+  canada_fr: "ca-fr",
+  catalonia: "ct-ca",
+  chile: "cl-es",
+  china: "cn-zh",
+  colombia: "co-es",
+  croatia: "hr-hr",
+  czech_republic: "cz-cs",
+  denmark: "dk-da",
+  estonia: "ee-et",
+  finland: "fi-fi",
+  france: "fr-fr",
+  germany: "de-de",
+  greece: "gr-el",
+  hong_kong: "hk-tzh",
+  hungary: "hu-hu",
+  iceland: "is-is",
+  india_en: "in-en",
+  indonesia_en: "id-en",
+  ireland: "ie-en",
+  israel_en: "il-en",
+  italy: "it-it",
+  japan: "jp-jp",
+  korea: "kr-kr",
+  latvia: "lv-lv",
+  lithuania: "lt-lt",
+  malaysia_en: "my-en",
+  mexico: "mx-es",
+  netherlands: "nl-nl",
+  new_zealand: "nz-en",
+  norway: "no-no",
+  pakistan_en: "pk-en",
+  peru: "pe-es",
+  philippines_en: "ph-en",
+  poland: "pl-pl",
+  portugal: "pt-pt",
+  romania: "ro-ro",
+  russia: "ru-ru",
+  saudi_arabia: "xa-ar",
+  singapore: "sg-en",
+  slovakia: "sk-sk",
+  slovenia: "sl-sl",
+  south_africa: "za-en",
+  spain_ca: "es-ca",
+  spain_es: "es-es",
+  sweden: "se-sv",
+  switzerland_de: "ch-de",
+  switzerland_fr: "ch-fr",
+  taiwan: "tw-tzh",
+  thailand_en: "th-en",
+  turkey: "tr-tr",
+  us_english: "us-en",
+  us_spanish: "us-es",
+  ukraine: "ua-uk",
+  united_kingdom: "uk-en",
+  vietnam_en: "vn-en",
+};
+
+const supportedDateFrame: Record<string, string> = {
+  any: "",
+  past_day: "d",
+  past_week: "w",
+  past_month: "m",
+  past_year: "y",
+};
+
 // Search state management
 let searchState: {
   currentQuery: string | null;
@@ -61,11 +136,14 @@ const main = async () => {
     });
   });
 
+  const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+  const lang = locale.split("-")[0];
+
   const defaultHeaders = {
     "User-Agent":
       "Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0",
     Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,zh-CN;q=0.7,en;q=0.3",
+    "Accept-Language": !lang ? "en-US,en;q=0.9" : `${locale},${lang};q=0.9`,
     "Accept-Encoding": "gzip, deflate, br, zstd",
     Referer: "https://html.duckduckgo.com/",
     "Sec-GPC": "1",
@@ -516,9 +594,17 @@ const main = async () => {
         "Searches DuckDuckGo and returns parsed results. Convert user's natrual language to keywords if needed. Starts from page 1 every time it is called. Use the fetch tool on result URLs to read more about them.",
       inputSchema: {
         query: z.string().describe("The search query"),
+        region: z
+          .enum(Object.keys(supportedRegions) as [string, ...string[]])
+          .optional()
+          .describe("The region to search in"),
+        dateFrame: z
+          .enum(Object.keys(supportedDateFrame) as [string, ...string[]])
+          .optional()
+          .describe("The date frame to search in"),
       },
     },
-    async ({ query }) => {
+    async ({ query, region, dateFrame }) => {
       try {
         // Reset search state for new search
         searchState = {
@@ -526,6 +612,16 @@ const main = async () => {
           currentPage: 1,
           nextFormData: null,
         };
+
+        const searchParams = new URLSearchParams();
+        searchParams.set("q", query);
+        if (region && supportedRegions[region]) {
+          searchParams.set("kl", supportedRegions[region]);
+        }
+        if (dateFrame && supportedDateFrame[dateFrame]) {
+          searchParams.set("df", supportedDateFrame[dateFrame]);
+        }
+        searchParams.set("b", "");
 
         // Make the search request with proper headers
         const response = await fetch("https://html.duckduckgo.com/html/", {
@@ -535,7 +631,7 @@ const main = async () => {
             "Content-Type": "application/x-www-form-urlencoded",
             Origin: "https://html.duckduckgo.com",
           },
-          body: `q=${encodeURIComponent(query)}&b=`,
+          body: searchParams.toString(),
         });
 
         if (!response.ok) {
