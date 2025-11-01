@@ -1,20 +1,45 @@
 {
-  "name": "mcp-web",
+  "name": "@tsfreddie/mcp-web",
+  "version": "1.0.2",
+  "author": "TsFreddie",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsfreddie/mcp-web.git"
+  },
+  "main": "dist/index.js",
   "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "start": "bun run index.ts"
-  },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",
+    "@types/bun": "latest",
     "cheerio": "^1.1.2",
+    "defuddle": "^0.6.6",
+    "entities": "^7.0.0",
+    "linkedom": "^0.18.12",
+    "pureimage": "^0.4.18",
     "zod": "^3.22.4"
-  }
+  },
+  "bin": {
+    "mcp-web": "dist/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/tsfreddie/mcp-web/issues"
+  },
+  "description": "A really basic DuckDuckGo web browse MCP server.",
+  "files": [
+    "dist/"
+  ],
+  "homepage": "https://github.com/TsFreddie/mcp-web",
+  "keywords": [
+    "mcp",
+    "web",
+    "browse",
+    "fetch"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "bun run index.ts",
+    "build": "bun run build.ts"
+  },
+  "type": "module"
 }
