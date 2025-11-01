@@ -554,21 +554,14 @@ const main = async () => {
         for (const dataURI of dataURIs) {
           dataURI.setAttribute("src", "");
         }
-        const domTime = Date.now() - startTime;
         const article = await Defuddle(dom as any, url, {
           markdown: true,
         });
-        const articleTime = Date.now() - startTime;
-
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify({
-                domTime: domTime,
-                articleTime: articleTime,
-                content: article.content,
-              }),
+              text: article.content,
             },
           ],
         };
